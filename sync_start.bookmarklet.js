@@ -1,5 +1,8 @@
-(function (exports) {
-  let sock = new WebSocket("wss://45.62.212.114:8765");
+javascript: (function (exports) {
+  let sock = new WebSocket("wss://45.62.212.114:8765", [
+    "TfM7a9lsQRBVhBTgklFUZ1Wz1a6qihoU2rGS49CmynMu4pLJQzNhGtHVKZBfBSRNaKEuJpsyHi3qt6DsIhBYwAfA9fcQGvJFpeotnGybKGxvIHH7CcVeaQle",
+    "pass",
+  ]);
 
   let play_video = () => {
     document.querySelector("video").play();
