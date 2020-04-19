@@ -1,8 +1,10 @@
 javascript: (function (exports) {
   const secretKey =
     localStorage.getItem("sync_SECRET_KEY") || prompt("Enter secret key");
+  const serverUrl =
+    localStorage.getItem("sync_server_url") || prompt("Enter server url");
   localStorage.setItem("sync_SECRET_KEY", secretKey);
-  let sock = new WebSocket("wss://45.62.212.114:8765", [secretKey, "pass"]);
+  let sock = new WebSocket(`wss://${serverUrl}`, [secretKey, "pass"]);
 
   let play_video = () => {
     document.querySelector("video").play();
