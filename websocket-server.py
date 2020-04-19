@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 
+import os
 import asyncio
 import threading
 import queue
 import pathlib
 import ssl
 import websockets
+import dotenv
+
+dotenv.load_dotenv()
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-cert = pathlib.Path(__file__).with_name('localhost.crt')
-key = pathlib.Path(__file__).with_name('localhost.key')
+cert = pathlib.Path(__file__).with_name(os.environ['SERVER_CERT_FILE'])
+key = pathlib.Path(__file__).with_name(os.environ['SERVER_KEY_FILE'])
 
 ssl_context.load_cert_chain(cert, key)
 SECRET_KEY = ''
@@ -29,9 +33,9 @@ async def echo(websocket, path):
     try:
         async for message in websocket:
             message_queue.put((remote_address, message))
-    except websockets.exceptions.ConnectionClosedError:
+    except (websockets.exceptions.ConnectionClosedError,
+            websockets.exceptions.ConnectionClosedOK):
         # disconnected explicitly with .close() client side
-        print('disconnected')
         with dict_lock:
             connection_dict.pop(remote_address)
 
