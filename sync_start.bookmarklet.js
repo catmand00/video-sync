@@ -1,8 +1,8 @@
 javascript: (function (exports) {
-  let sock = new WebSocket("wss://45.62.212.114:8765", [
-    "TfM7a9lsQRBVhBTgklFUZ1Wz1a6qihoU2rGS49CmynMu4pLJQzNhGtHVKZBfBSRNaKEuJpsyHi3qt6DsIhBYwAfA9fcQGvJFpeotnGybKGxvIHH7CcVeaQle",
-    "pass",
-  ]);
+  const secretKey =
+    localStorage.getItem("sync_SECRET_KEY") || prompt("Enter secret key");
+  localStorage.setItem("sync_SECRET_KEY", secretKey);
+  let sock = new WebSocket("wss://45.62.212.114:8765", [secretKey, "pass"]);
 
   let play_video = () => {
     document.querySelector("video").play();
