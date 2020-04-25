@@ -24,7 +24,7 @@ connection_dict = {}
 dict_lock = threading.RLock()
 
 # Just send same back to everyone, including sender
-mirror_actions = ['play', 'pause', 'seek', 'volume_change']
+mirror_actions = ['play', 'pause', 'seek', 'volumechange']
 
 
 def get_play_action():
@@ -40,7 +40,7 @@ def get_seek_action(timestamp):
 
 
 def get_volume_change_action(volume):
-    return json.dumps({'action': 'volume_change', 'volume': volume})
+    return json.dumps({'action': 'volumechange', 'volume': volume})
 
 
 async def echo(websocket, path):
@@ -78,7 +78,7 @@ async def send_to_all(msg, sender=None):
             try:
                 if sender and addr == sender:
                     # send to everyone except sender (eg, pause for loading)
-                    pass
+                    continue
                 await sock.send(msg)
             except (websockets.exceptions.ConnectionClosedError,
                     websockets.exceptions.ConnectionClosedOK):
@@ -92,12 +92,12 @@ async def send_to_all(msg, sender=None):
 def check_messages():
     asyncio.set_event_loop(asyncio.new_event_loop())
     while True:
-        frame = message_queue.get()
-        payload = json.loads(frame[1])
+        remote_address, frame = message_queue.get()
+        payload = json.loads(frame)
         action = payload['action']
         if action in mirror_actions:
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(send_to_all(payload))
+            loop.run_until_complete(send_to_all(frame, remote_address))
     loop.close()
 
 
