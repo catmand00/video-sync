@@ -23,7 +23,8 @@ message_queue = queue.Queue()
 connection_dict = {}
 dict_lock = threading.RLock()
 
-valid_messages = ['play', 'pause', 'seek', 'volume_change']
+# Just send same back to everyone, including sender
+mirror_actions = ['play', 'pause', 'seek', 'volume_change']
 
 
 def get_play_action():
@@ -70,11 +71,14 @@ def seek_subprotocol(url, request_headers):
         return (500, [], 'Segmentation fault.')
 
 
-async def send_to_all(msg):
+async def send_to_all(msg, sender=None):
     with dict_lock:
         popping = []
         for addr, sock in connection_dict.items():
             try:
+                if sender and addr == sender:
+                    # send to everyone except sender (eg, pause for loading)
+                    pass
                 await sock.send(msg)
             except (websockets.exceptions.ConnectionClosedError,
                     websockets.exceptions.ConnectionClosedOK):
@@ -89,10 +93,11 @@ def check_messages():
     asyncio.set_event_loop(asyncio.new_event_loop())
     while True:
         frame = message_queue.get()
-        msg = frame[1]
-        if msg == 'pause' or msg == 'play':
+        payload = json.loads(frame[1])
+        action = payload['action']
+        if action in mirror_actions:
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(send_to_all(msg))
+            loop.run_until_complete(send_to_all(payload))
     loop.close()
 
 
