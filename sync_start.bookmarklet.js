@@ -9,6 +9,11 @@ javascript: (function (exports) {
 
   let sock_send_json = (json) => sock.send(JSON.stringify(json));
 
+  ignorePlay = false;
+  ignorePause = false;
+  ignoreSeek = false;
+  ignoreVolumechange = false;
+
   let play_video = () => {
     document.querySelector("video").play();
   };
@@ -23,15 +28,31 @@ javascript: (function (exports) {
   };
 
   let sync_play = () => {
+    if (ignorePlay) {
+      ignorePlay = false;
+      return;
+    }
     sock_send_json({ action: "play" });
   };
   let sync_pause = () => {
+    if (ignorePause) {
+      ignorePause = false;
+      return;
+    }
     sock_send_json({ action: "pause" });
   };
   let sync_volumechange = (ev) => {
+    if (ignoreVolumechange) {
+      ignoreVolumechange = false;
+      return;
+    }
     sock_send_json({ action: "volumechange", volume: ev.target.volume });
   };
   let sync_seek = (ev) => {
+    if (ignoreSeek) {
+      ignoreSeek = false;
+      return;
+    }
     sock_send_json({ action: "seek", timestamp: ev.target.currentTime });
   };
 
@@ -40,12 +61,16 @@ javascript: (function (exports) {
   sock.onmessage = (m) => {
     let { action, volume, timestamp } = JSON.parse(m.data);
     if (action === "play") {
+      ignorePlay = true;
       play_video();
     } else if (action === "pause") {
+      ignorePause = true;
       pause_video();
     } else if (action === "seek") {
+      ignoreSeek = true;
       seek_video(timestamp);
     } else if (action === "volumechange") {
+      ignoreVolumechange = true;
       volumechange_video(volume);
     }
   };
