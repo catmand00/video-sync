@@ -4,13 +4,25 @@ javascript: (function (exports) {
   const serverUrl =
     localStorage.getItem("sync_server_url") || prompt("Enter server url");
   localStorage.setItem("sync_SECRET_KEY", secretKey);
+  localStorage.setItem("sync_server_url", serverUrl);
   let sock = new WebSocket(`wss://${serverUrl}`, [secretKey, "pass"]);
+  let video = document.querySelector("video");
 
   let play_video = () => {
-    document.querySelector("video").play();
+    video.play();
   };
   let pause_video = () => {
-    document.querySelector("video").pause();
+    video.pause();
+  };
+
+  let sync_play = () => {
+    sock.send("play");
+  };
+  let sync_pause = () => {
+    sock.send("pause");
+  };
+  let sync_disconnect = () => {
+    sock.close();
   };
 
   sock.onclose = () => alert("Video Sync is disconnected");
@@ -24,15 +36,9 @@ javascript: (function (exports) {
     }
   };
 
-  let sync_play = () => {
-    sock.send("play");
-  };
-  let sync_pause = () => {
-    sock.send("pause");
-  };
-  let sync_disconnect = () => {
-    sock.close();
-  };
+  video.onplay = sync_play;
+  video.onpause = sync_pause;
+
   exports.sync_play = sync_play;
   exports.sync_pause = sync_pause;
   exports.sync_disconnect = sync_disconnect;

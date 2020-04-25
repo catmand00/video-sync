@@ -6,6 +6,7 @@ import threading
 import queue
 import pathlib
 import ssl
+import json
 import websockets
 import dotenv
 
@@ -21,6 +22,24 @@ SECRET_KEY = ''
 message_queue = queue.Queue()
 connection_dict = {}
 dict_lock = threading.RLock()
+
+valid_messages = ['play', 'pause', 'seek', 'volume_change']
+
+
+def get_play_action():
+    return json.dumps({'action': 'play'})
+
+
+def get_pause_action():
+    return json.dumps({'action': 'pause'})
+
+
+def get_seek_action(timestamp):
+    return json.dumps({'action': 'seek', 'timestamp': timestamp})
+
+
+def get_volume_change_action(volume):
+    return json.dumps({'action': 'volume_change', 'volume': volume})
 
 
 async def echo(websocket, path):
